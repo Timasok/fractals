@@ -19,14 +19,15 @@ int main()
     // img.create(Mandb_Initial.w_width, Mandb_Initial.w_height, pixels);
     // texture.loadFromImage(img);
 
+    Clock clock;
+
     Texture texture;
     Sprite sprite(texture);
 
+    float lastTime = 0;
     while(window.isOpen())
     {
         window.clear();
-
-        // window.draw(sprite);
         Event event;
         while (window.pollEvent(event))
         {
@@ -34,12 +35,14 @@ int main()
 
             if(event.type == Event::KeyPressed && event.key.code == Keyboard::Escape)
                 window.close(); 
+
             if (event.type == Event::Closed)
                 window.close();
         }
     
-        // Test(window);
         FormMandelbrot(window);
+        GetFPS(clock, window, lastTime);
+        
         window.display();
     }
 
@@ -130,6 +133,18 @@ int Test(RenderWindow &window)
 
     return 0;
 }
+
+float GetFPS(Clock &clock, RenderWindow &window, float lastTime)
+{
+    float currentTime = clock.restart().asSeconds();
+    float fps = 1.f / (currentTime - lastTime);
+    printf("FPS = %g\n", fps);
+
+    lastTime = currentTime;
+    
+    return fps;
+}
+
 
 int Draw_Fractal(Uint8 * pixels, Sprite *sprite)
 {

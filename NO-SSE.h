@@ -10,6 +10,7 @@ int Test(RenderWindow &window);
 int FormMandelbrot(RenderWindow &window);
 int Draw_Fractal(Uint8 * pixels, Sprite *sprite);
 int Check_Window(Window *window, Sprite *sprite);
+float GetFPS(Clock &clock, RenderWindow &window, float lastTime);
 
 static struct {
 
