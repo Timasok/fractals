@@ -6,8 +6,11 @@
 
 #include "NO-SSE.h"
 
-const int EPS = 0.0001;
-static float scale = 1;                                        //number of pixels in 1 rectangle
+const int EPS        = 0.0001;
+static float scale   = 1;                                        //number of pixels in 1 rectangle
+static int X_shift   = 0;
+static int Y_shift   = 0;
+static int shift_val = 10;
 
 int main()
 {
@@ -33,8 +36,36 @@ int main()
         {
             // "close requested" event: we close the window
 
-            if(event.type == Event::KeyPressed && event.key.code == Keyboard::Escape)
-                window.close(); 
+            if(event.type == Event::KeyPressed)
+            {
+                if (event.key.code == Keyboard::Escape)
+                {
+                    window.close(); 
+                
+                } else if(event.key.code == Keyboard::Equal)//+
+                {
+                    scale/=1.25;
+                    // printf("new scale = %g\n", scale);
+                
+                } else if(event.key.code == Keyboard::Dash)//-
+                {
+                    scale*=1.25;
+                    // printf("new scale = %g\n", scale);
+                
+                } else if(event.key.code == Keyboard::Left)
+                {
+                    X_shift-=shift_val;
+                } else if(event.key.code == Keyboard::Right)
+                {
+                    X_shift+=shift_val;
+                } else if(event.key.code == Keyboard::Up)
+                {
+                   Y_shift-=shift_val;
+                } else if(event.key.code == Keyboard::Down)
+                {
+                    Y_shift+=shift_val;
+                }
+            }
 
             if (event.type == Event::Closed)
                 window.close();
@@ -42,7 +73,7 @@ int main()
     
         FormMandelbrot(window);
         GetFPS(clock, window, lastTime);
-        
+
         window.display();
     }
 
@@ -55,17 +86,18 @@ int FormMandelbrot(RenderWindow &window)
     // RectangleShape screen = RectangleShape();
     // screen.setSize(size);
 
-    RectangleShape piece = RectangleShape(Vector2f(1 , 1));
+    // RectangleShape piece = RectangleShape(Vector2f(1/scale, 1/scale));
+    RectangleShape piece = RectangleShape(Vector2f(1, 1));
 
     int yi = 0;
     for (; yi < Mandb_Initial.w_height; yi++)
     {
-        float Y0 = Mandb_Initial.y_min + yi*Mandb_Initial.dy;
+        float Y0 = Mandb_Initial.y_min + (Y_shift+yi)*Mandb_Initial.dy*scale;
 
         int xi = 0;
         for(; xi < Mandb_Initial.w_width; xi++)
         {
-            float X0 = Mandb_Initial.x_min + xi*Mandb_Initial.dx;
+            float X0 = Mandb_Initial.x_min + (X_shift + xi)*Mandb_Initial.dx*scale;
 
             float X  = X0;
             float Y  = Y0; 
@@ -144,7 +176,6 @@ float GetFPS(Clock &clock, RenderWindow &window, float lastTime)
     
     return fps;
 }
-
 
 int Draw_Fractal(Uint8 * pixels, Sprite *sprite)
 {
