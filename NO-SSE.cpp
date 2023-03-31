@@ -1,34 +1,32 @@
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 #include <cassert>
 // #include "./AppUtils.h"
 
 #include "NO-SSE.h"
 
 const int EPS = 0.0001;
+static float scale = 1;                                        //number of pixels in 1 rectangle
 
 int main()
 {
-    RenderWindow window(VideoMode(Mandb_Initial.w_width, Mandb_Initial.w_height), "Mandelbrot");        //updatewindow
+    RenderWindow window(VideoMode(Mandb_Initial.w_width, Mandb_Initial.w_height), "Mandelbrot");
 
-    Uint8 pixels[4*Mandb_Initial.num_pixels] = {};
+    // Uint8 pixels[4*Mandb_Initial.num_pixels] = {};
 
-    Calculate(pixels);
-
-    Image img;
-    img.create(Mandb_Initial.w_width*4, Mandb_Initial.w_height*4, pixels);
+    // Image img;
+    // img.create(Mandb_Initial.w_width, Mandb_Initial.w_height, pixels);
+    // texture.loadFromImage(img);
 
     Texture texture;
-    texture.loadFromImage(img);
     Sprite sprite(texture);
 
     while(window.isOpen())
     {
         window.clear();
 
-        window.draw(sprite);
-        window.display();
-
+        // window.draw(sprite);
         Event event;
         while (window.pollEvent(event))
         {
@@ -39,13 +37,22 @@ int main()
             if (event.type == Event::Closed)
                 window.close();
         }
+    
+        // Test(window);
+        FormMandelbrot(window);
+        window.display();
     }
 
     return 0;
 }
 
-int Calculate(Uint8 * pixels)
+int FormMandelbrot(RenderWindow &window)
 {
+    // Vector2 size = Vector2((float)Mandb_Initial.w_width, (float)Mandb_Initial.w_height);
+    // RectangleShape screen = RectangleShape();
+    // screen.setSize(size);
+
+    RectangleShape piece = RectangleShape(Vector2f(1 , 1));
 
     int yi = 0;
     for (; yi < Mandb_Initial.w_height; yi++)
@@ -63,7 +70,8 @@ int Calculate(Uint8 * pixels)
             float R2 = X*X + Y*Y;
             int c = 0;
 
-            while (c < Mandb_Initial.N_max && R2 - Mandb_Initial.R_max2 < EPS)
+            while (c < Mandb_Initial.N_max && R2 < Mandb_Initial.R_max2)
+            // while (c < Mandb_Initial.N_max && R2 - Mandb_Initial.R_max2 < EPS)
             {
                 float X2  = X*X;
                 float Y2  = Y*Y;
@@ -76,15 +84,49 @@ int Calculate(Uint8 * pixels)
 
                 c++;
             }
-//extract into separate function
-            Color col = Color(255-c, (c%2)*128, c, 255);
-            pixels[4*xi*yi+0] = col.r;
-            pixels[4*xi*yi+1] = col.g;
-            pixels[4*xi*yi+2] = col.b;
-            pixels[4*xi*yi+3] = col.a;
+            
+            Color col = Color(100, 100, 100, 255);
+
+            if (c != Mandb_Initial.N_max)
+            {
+                col = Color(144*c, 255 - c, abs(101 - c), c*255);
+            }
+
+            piece.setPosition((float) xi, (float) yi);
+
+            piece.setFillColor(col);
+            // piece.setFillColor();
+
+            // printf("(%d, %d)\n", xi, yi);
+
+            window.draw(piece);
+
+        //extract into separate function
+            // pixels[4*xi*yi+0] = col.r;
+            // pixels[4*xi*yi+1] = col.g;
+            // pixels[4*xi*yi+2] = col.b;
+            // pixels[4*xi*yi+3] = col.a;
 
         }
     }   
+
+    return 0;
+}
+
+int Test(RenderWindow &window)
+{
+    RectangleShape piece = RectangleShape(Vector2f(1 , 1));
+
+    for(int counter = 0; counter < 1000; counter++)
+    {
+        piece.setPosition((float) counter, (float) counter);
+
+        piece.setFillColor(Color(255, 155, 255, 255));
+
+        printf("(%d, %d)\n", counter, counter);
+
+        window.draw(piece);
+    }
 
     return 0;
 }

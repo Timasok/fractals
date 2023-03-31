@@ -1,21 +1,28 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/System/Vector2.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+// #include <SFML/Rect.hpp>
 
 using namespace sf;
 
-int Calculate(Uint8 * pixels);
+int Test(RenderWindow &window);
+int FormMandelbrot(RenderWindow &window);
 int Draw_Fractal(Uint8 * pixels, Sprite *sprite);
 int Check_Window(Window *window, Sprite *sprite);
 
-
 static struct {
 
-    const int N_max = 10;
-    const float R_max = 100.0;
+    const int N_max = 256;
+    const float R_max = 10.0;
     const float R_max2 = R_max*R_max;
 
-    const int w_width   = 800;
-    const int w_height  = 600;
+    // const int w_width   = 800;
+    // const int w_height  = 600;
+
+    const int w_width   = 1000;
+    const int w_height  = 1000;
+
     const int num_pixels = w_height*w_width;
 
     const float x_max =  2.0;
