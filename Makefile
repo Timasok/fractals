@@ -1,4 +1,4 @@
-MAIN = NO-SSE
+MAIN = fractal
 
 all: compile link run
 

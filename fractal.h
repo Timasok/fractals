@@ -6,20 +6,26 @@
 
 using namespace sf;
 
-int Test(RenderWindow &window);
-int FormMandelbrot(RenderWindow &window);
-int Draw_Fractal(Uint8 * pixels, Sprite *sprite);
+#define BLUE
+// #define SSE
+#define NO_SSE
+// #define INLINE
+
+int FormMandelbrot(RenderWindow &window, Uint8 *pixels);
+int Draw_Fractal(RenderWindow &window, Uint8 *pixels, Sprite &sprite, Texture &texture);
+
+int HandleKey(RenderWindow &window);
 int Check_Window(Window *window, Sprite *sprite);
-float GetFPS(Clock &clock, RenderWindow &window, float lastTime);
+Color GetColor(int c);
+float GetFPS(Clock &clock, float lastTime);
+
+int Test(RenderWindow &window);
 
 static struct {
 
     const int N_max = 256;
     const float R_max = 10.0;
     const float R_max2 = R_max*R_max;
-
-    // const int w_width   = 800;
-    // const int w_height  = 600;
 
     const int w_width   = 1000;
     const int w_height  = 1000;
