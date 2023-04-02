@@ -2,6 +2,7 @@
 #include <time.h>
 #include <math.h>
 #include <cassert>
+#include <unistd.h>
 // #include "./AppUtils.h"
 
 #include "fractal.h"
@@ -26,6 +27,7 @@ int main()
     Sprite sprite(texture);
 
     float lastTime = 0;
+
 
     while(window.isOpen())
     {
@@ -101,17 +103,17 @@ int HandleKey(RenderWindow &window)
             
             } else if(event.key.code == Keyboard::Left)
             {
-                X_shift-=(int)(shift_val*scale);
+                X_shift+=(int)(shift_val*scale);
 
             } else if(event.key.code == Keyboard::Right)
             {
-                X_shift+=(int)(shift_val*scale);
+                X_shift-=(int)(shift_val*scale);
             } else if(event.key.code == Keyboard::Up)
             {
-                Y_shift-=(int)(shift_val*scale);
+                Y_shift+=(int)(shift_val*scale);
             } else if(event.key.code == Keyboard::Down)
             {
-                Y_shift+=(int)(shift_val*scale);
+                Y_shift-=(int)(shift_val*scale);
             }
         }
 
@@ -122,11 +124,12 @@ int HandleKey(RenderWindow &window)
     return 0;
 }
 
-#ifdef NO_SSE
+#ifndef SSE
 
 int FormMandelbrot(RenderWindow &window, Uint8 *pixels)
 {
-    RectangleShape piece = RectangleShape(Vector2f(1/scale, 1/scale));
+    // RectangleShape piece = RectangleShape(Vector2f(1/scale, 1/scale));
+    RectangleShape piece = RectangleShape(Vector2f(1, 1));
 
     int yi = 0;
     for (; yi < Mandb_Initial.w_height; yi++)
@@ -145,7 +148,7 @@ int FormMandelbrot(RenderWindow &window, Uint8 *pixels)
 
             float R2 = X*X + Y*Y;
 
-            int c = 0;
+            volatile int c = 0;
             // while (c < Mandb_Initial.N_max && R2 < Mandb_Initial.R_max2)
             while (c < Mandb_Initial.N_max && R2 - Mandb_Initial.R_max2 < EPS)
             {
@@ -161,92 +164,110 @@ int FormMandelbrot(RenderWindow &window, Uint8 *pixels)
                 c++;
             }
 
+#ifndef NO_VID
             piece.setPosition((float) xi, (float) yi);
 
             piece.setFillColor(GetColor(c));
             window.draw(piece);
-
+#endif
         }
     }   
 
     return 0;
 }
 
-#elif defined INLINE
+#else
 
-#include "inline.h"
+#include <immintrin.h>
+
 const int N_BITES = 8;
 
-int FormMandelbrot(RenderWindow &window)
+int FormMandelbrot(RenderWindow &window, Uint8 *pixels)
 {
-    int point_vector[N_BITES] = {};
-    float R2_max[N_BITES]     = Mandb_Initial.R_max2;                           //__m256 _mm256_set1_ps (float a)
+    // RectangleShape piece = RectangleShape(Vector2f(1/scale, 1/scale));
+    RectangleShape piece = RectangleShape(Vector2f(1, 1));
+
+    __m256 R2_max = _mm256_set1_ps(Mandb_Initial.R_max2);                                       //__m256 _mm256_set1_ps (float a)
 
     int yi = 0;
-    for (; yi < Mandb_Initial.w_height; yi+=N_BITES)
+    for (; yi < Mandb_Initial.w_height; yi++)
     {
-        float Y0[N_BITES] = {yi, yi+1, yi+2, yi+3, yi+4, yi+5, yi+6, yi+7};     // __m256 _mm256_setr_m128 (__m128 lo, __m128 hi)
-              Y0[i] *= Mandb_Initial.dy*scale;                                  // __m256 _mm256_mul_ps (__m256 a, __m256 b)
-              Y0[i]  +=(Mandb_Initial.y_min + Y_shift*Mandb_Initial.dy*scale);  // __m256 _mm256_add_ps (__m256 a, __m256 b)
+        __m256 Y_SHIFT = _mm256_set1_ps(Mandb_Initial.y_min + Y_shift*Mandb_Initial.dy*scale);
+        __m256 DY = _mm256_set1_ps(Mandb_Initial.dy*scale);
+        __m256 Y0 = _mm256_set1_ps(yi);                // __m256 _mm256_setr_m128 (__m128 lo, __m128 hi)
+         Y0 = _mm256_mul_ps(Y0, DY);                                                      // __m256 _mm256_mul_ps (__m256 a, __m256 b)
+         Y0 = _mm256_add_ps(Y0, Y_SHIFT);                                                 // __m256 _mm256_add_ps (__m256 a, __m256 b)
 
         int xi = 0;
         for(; xi < Mandb_Initial.w_width; xi+=N_BITES)
         {
+            __m256 X_SHIFT = _mm256_set1_ps(Mandb_Initial.x_min + X_shift*Mandb_Initial.dx*scale);
+            __m256 DX = _mm256_set1_ps(Mandb_Initial.dx*scale);
+            __m256 X0 = _mm256_set_ps(xi, xi+1, xi+2, xi+3, xi+4, xi+5, xi+6, xi+7);                // __m256 _mm256_setr_m128 (__m128 lo, __m128 hi)
+             X0 = _mm256_mul_ps(X0, DX);                                                      // __m256 _mm256_mul_ps (__m256 a, __m256 b)
+             X0 = _mm256_add_ps(X0, X_SHIFT);                                                 // __m256 _mm256_add_ps (__m256 a, __m256 b)
 
-        float X0[N_BITES] = {xi, xi+1, xi+2, xi+3, xi+4, xi+5, xi+6, xi+7};     // __m256 _mm256_setr_m128 (__m128 lo, __m128 hi)
-              X0[i] *= Mandb_Initial.dx*scale;                                  // __m256 _mm256_mul_ps (__m256 a, __m256 b)
-              X0[i]  +=(Mandb_Initial.x_min + X_shift*Mandb_Initial.dx*scale);  // __m256 _mm256_add_ps (__m256 a, __m256 b)
-                                                                                
-                                                                                //__m256 _mm256_set1_ps (float a)                                                                                
-            float X[N_BITES]  = X0;                                             //__m256 _mm256_set1_ps (float a)
-            float Y[N_BITES]  = Y0; 
+                                                                                                    //__m256 _mm256_set1_ps (float a)                                                                                
+            __m256 X = X0;                                                                          //__m256 _mm256_set1_ps (float a)
+            __m256 Y = Y0; 
 
-            int c[N_BITES] = {};                                                //__m256 _mm256_setzero_ps (void)
-            int cmp[N_BITES] = {};                                              // __m256i _mm256_set1_epi32 (int a) - set 1
+            __m256 c   = _mm256_setzero_ps();                                                //__m256 _mm256_setzero_ps (void)
+            __m256 cmp = _mm256_set1_ps(1);                                              // __m256i _mm256_set1_epi32 (int a) - set 1
             
-            int N[N_BITES]          = Mandb_Initial.N_max;                      //__m256 _mm256_set1_ps (float a)
+            // __m256i N = _mm256_set1_epi32(Mandb_Initial.N_max);                      //__m256 _mm256_set1_ps (float a)
+            // int mask = 1; 
+                                                                                    //__m256i _mm256_blend_epi32 (__m256i a, __m256i b, const int imm8)
+            for(int i = 0; i < Mandb_Initial.N_max; i++)
+            {
+                __m256 X2 = _mm256_mul_ps(X, X);                                   //__m256 _mm256_mul_ps (__m256 a, __m256 b)
+                __m256 Y2 = _mm256_mul_ps(Y, Y);                                   //__m256 _mm256_mul_ps (__m256 a, __m256 b)
+                __m256 R2 = _mm256_add_ps(X2, Y2);                                 //__m256 _mm256_add_ps (__m256 a, __m256 b)
 
-            int mask = 1; 
-                                                                  //__m256i _mm256_blend_epi32 (__m256i a, __m256i b, const int imm8)
-            do{
-                float X2[N_BITES]  = X*X;                                           //__m256 _mm256_mul_ps (__m256 a, __m256 b)
-                float Y2[N_BITES]  = Y*Y;                                           //__m256 _mm256_mul_ps (__m256 a, __m256 b)
-                float R2[N_BITES]  = X2 + Y2;                                       //__m256 _mm256_add_ps (__m256 a, __m256 b)
+                 cmp = _mm256_cmp_ps (R2, R2_max, EPS);                                                        
+                                                                                   //__m256 _mm256_cmp_ps (__m256 a, __m256 b, const int imm8)
+                int mask  =_mm256_movemask_ps (cmp);                               //int _mm256_movemask_ps (__m256 a)                                 
+                // printf("%b", mask);
 
-                set cmp[i]                                                          //__m256 _mm256_cmp_ps (__m256 a, __m256 b, const int imm8)
-                mask =                                                              //int _mm256_movemask_ps (__m256 a)                                 
-                
                 if (!mask)
                     break;
 
-                float XY  = X*Y;                                                    //__m256 _mm256_mul_ps (__m256 a, __m256 b)
-                      XY  = XY + X*Y;                                               // __m256 _mm256_add_ps (__m256 a, __m256 b)
+                __m256 XY = _mm256_mul_ps(X, Y); 
+                 XY = _mm256_add_ps (XY, XY);                                 // __m256 _mm256_add_ps (__m256 a, __m256 b)
 
-                X = X2 - Y2;                                                        //__m256 _mm256_sub_ps (__m256 a, __m256 b)
-                X = X + X0;                                                         //__m256 _mm256_add_ps (__m256 a, __m256 b)
-                Y = XY + Y0;                                                        //__m256 _mm256_add_ps (__m256 a, __m256 b)
+                 X = _mm256_sub_ps (X2, Y2);                                  //__m256 _mm256_sub_ps (__m256 a, __m256 b)
+                 X = _mm256_add_ps (X, X0);                                   //__m256 _mm256_add_ps (__m256 a, __m256 b)
+                 Y = _mm256_add_ps (XY, Y0);
+                                                                                    //__m256 _mm256_add_ps (__m256 a, __m256 b)
+                 c = _mm256_add_ps(c, cmp);                                   //int _mm256_movemask_ps (__m256 a) 
+            
+                // for (int counter = 0; counter < N_BITES; counter++)
+                // {
+                //     float c_what = ((float *)&c)[N_BITES - counter];
+                //     printf("%f ", c_what);
+                // }
+                // printf("\n");
+                // sleep(1);
+            } ;
 
-                c = c + cmp;                                                        //__m256i _mm256_add_epi32 (__m256i a, __m256i b)                                                                 //
-                N = N - c                                                           //__m256i _mm256_sub_epi32 (__m256i a, __m256i b)
-                
-                mask<-N                                                             //int _mm256_movemask_ps (__m256 a) 
-            } while (!mask );
+#ifndef NO_VID
 
-            // for(int i = 0; i < N_BITES){
+            for (int counter = 0; counter < N_BITES; counter++)
+            {
+                float c_single = ((float *)&c)[N_BITES - counter];
 
-            // piece.setPosition((float) xi, (float) yi);
+                piece.setPosition((float) (xi+counter), (float) (yi));
 
-            // piece.setFillColor(GetColor(c));
-            // window.draw(piece);
-            // }
+                piece.setFillColor(GetColor((int)c_single));
+                window.draw(piece);
+            }
+#endif
+
         }
     }   
 
-}
-#elif defined SSE
 
-#include <immintrin.h>
-    __m256 quad_vector = _mm256_set_ps(7.f, 6.f, 5.f, 4.f, 3.f, 2.f, 1.f, 0.f);
+    return 0;   
+}
 
 #endif
 

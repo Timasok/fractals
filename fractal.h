@@ -7,9 +7,10 @@
 using namespace sf;
 
 #define BLUE
-// #define SSE
-#define NO_SSE
-// #define INLINE
+
+#define SSE
+
+// #define NO_VID
 
 int FormMandelbrot(RenderWindow &window, Uint8 *pixels);
 int Draw_Fractal(RenderWindow &window, Uint8 *pixels, Sprite &sprite, Texture &texture);
