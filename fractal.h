@@ -9,8 +9,9 @@ using namespace sf;
 #define BLUE
 
 #define SSE
-
 // #define NO_VID
+
+const int N_cycles = 1;
 
 int FormMandelbrot(RenderWindow &window, Uint8 *pixels);
 int Draw_Fractal(RenderWindow &window, Uint8 *pixels, Sprite &sprite, Texture &texture);
@@ -18,7 +19,7 @@ int Draw_Fractal(RenderWindow &window, Uint8 *pixels, Sprite &sprite, Texture &t
 int HandleKey(RenderWindow &window);
 int Check_Window(Window *window, Sprite *sprite);
 Color GetColor(int c);
-float GetFPS(Clock &clock, float lastTime);
+int GetFPS(Clock &clock, float lastTime);
 
 int Test(RenderWindow &window);
 

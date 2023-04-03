@@ -1,6 +1,11 @@
 MAIN 	  = fractal
-O_FLAGS   = -Ofast #-O3 #-O2 
-SSE_FLAGS = -mavx
+
+# O_FLAGS   = -O2
+# O_FLAGS   = -O3
+O_FLAGS   = -Ofast
+# O_FLAGS = 
+
+SSE_FLAGS = -msse
 
 all: compile link run
 
