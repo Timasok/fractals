@@ -1,4 +1,4 @@
-#Mandelbrot
+# Mandelbrot
 
 This project is a work on optimization using SSE and AVX intrinsics. The algorithm used for tgis project is Mandelbrot fractal.
 
@@ -6,7 +6,7 @@ Project is written on C++ using SFML library.
 
 ![Mandelbrot](img/Mandelbrot_set.png)
 
-##Optimization results
+## Optimization results
 
 I have been displaying pixels on the screen in a loop point by point. That's why the process of point-by-point mapping slowed down the optimization of calculations, which consisted in grouping pixels by 4.
 
@@ -26,8 +26,8 @@ If you want to run this program at your pc, you will need to know the control of
 
 * Escape - exit from current process
 
-* = - zoom in
+* \= - zoom in
 
-* - - zoom out
+* \- - zoom out
 
 * arrows (← → ↑ ↓) - moving the camera
