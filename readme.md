@@ -10,7 +10,7 @@ Project is written on C++ using SFML library.
 
 I have been displaying pixels on the screen in a loop point by point. That's why the process of point-by-point mapping slowed down my SSE optimization of calculations. 
 
-The optimisation consisted in grouping pixels by 4 (128 bit arrays) and calculating their colours simultaneously. Then standart arithmetic operations are replaced with CPU defined functions, called intrinsics. My CPU model supports Intel intrinsics such as SSE and AVX-2.
+The optimization consisted in grouping pixels by 4 (128 bit arrays) and calculating their colours simultaneously. Then standart arithmetic operations are replaced with CPU defined functions, called intrinsics. My CPU model supports Intel intrinsics such as SSE and AVX-2.
 
 Then I've made various measurements in FPS for different optimization flags, and display modes.
 
@@ -22,6 +22,7 @@ Then I've made various measurements in FPS for different optimization flags, and
 | sse + vid    | 1.69 | 1.85 |  2.01  | 2.14   |
 
 We can conclude that using compiler optimizations together with computational optimizations makes it possible to achieve acceleration by 7 times.
+We can also verify the slowness of my chosen method of drawing (display every pixel in cycle).
 
 # Control
 
