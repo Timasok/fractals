@@ -11,9 +11,9 @@ const int EPS        = 0.0001;
 static float scale   = 1;                                        //number of pixels in 1 rectangle
 static int X_shift   = 0;
 static int Y_shift   = 0;
-static int shift_val = 10;
-static float fps_average     = 0.f;
-const int AVERAGE           = 10;
+static int shift_val      = 10;
+static float fps_average  = 0.f;
+const int AVERAGE         = 10;
 
 int main()
 {
@@ -52,20 +52,6 @@ int main()
             fps_average = 0;
         }
     }
-
-// #else
-//     while (1)
-//     {
-//         for(int i = 0; i < N_cycles; i++)
-//         {
-//             FormMandelbrot(window, pixels);
-//         }
-
-//         GetFPS(clock, lastTime); 
-//     }
-
-// #endif
-
 
     return 0;
 }
