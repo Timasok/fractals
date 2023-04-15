@@ -8,8 +8,9 @@ using namespace sf;
 
 #define BLUE
 
+#define COUNTS 1
 #define SSE
-// #define NO_VID
+#define NO_VID
 
 const int N_cycles = 1;
 

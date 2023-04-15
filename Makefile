@@ -2,7 +2,7 @@ MAIN 	  = fractal
 
 # O_FLAGS   = -O2
 # O_FLAGS   = -O3
-O_FLAGS   = -Ofast
+# O_FLAGS   = -Ofast
 # O_FLAGS = 
 
 SSE_FLAGS = -msse

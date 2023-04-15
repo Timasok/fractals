@@ -1,31 +1,47 @@
-# Mandelbrot
+# Research topic
+Using intrinsic functions for optimization.
 
-This project is a work on optimization using SSE and AVX intrinsics. The algorithm used for this project is Mandelbrot fractal.
+# Algorithm and software tools
 
-The project is written on C++ using SFML library. 
+Here is a picture of Mandelbrot fractal created by our program.
 
 ![Mandelbrot](img/Mandelbrot_set.png)
 
+This algorithm is often used to estimate the computational speed of hardware.
+
+Note:
+SFML is used as a graphics library.
+
 ## Optimization results
 
-We display pixels on the screen in a loop point by point. That's why the drawing process slowed down SSE optimizations. 
+What kinds of optimization were used in this work?
+* SIMD-instructions, such as Intel SSE intrinsics.
+* Compiler optimization flags such as -O2, -O3, -Ofast.
 
-What is a SSE optimization? 
->A non-compiler optimization where we replace simple operations with inline functions. Inline functions turn into CPU instructions. Usually they are used to vectorize and parallelize repeatable calculations.  
+Note:
+Our CPU(intel core i3) supports SSE and AVX2 intrinsics. We used 128-bit arrays.//TODO
 
-In this alghoritm we group pixels by 4 32-bit chunks and calculate their colours simultaneously.
-This CPU supports Intel SSE and AVX-2 intrinsics.
+We measured FPS of our algorithm using
+>sf::Clock 
 
-After various measurements we can get the following statistics below. (O-flags, and display modes). the main values at this table are: ...
+It is relevant to examine FPS in different computation modes. Here are the iterations of each mode:
+1. Calculate the pixels of the picture.
+2. Calculate the pixels of the picture and display them.
+3. Repeatedly calculate the pixels of the picture and display them once.
 
-| Optimization |        | -O2  |  -O3   | -Ofast |
-| :----------: | :--:   | :--: | :----: | :----: |
-|    no_sse    | [6.15] | 11.1 |  11.2  | 11.6   |
-| no_sse + vid | 1.43   | 1.81 |  1.77  | 1.65   |
-| sse 128-bit  | 8.62   | 39.6 |  40.3  | [42.6] |
-| sse + vid    | 1.69   | 1.85 |  2.01  | 2.14   |
 
-We can conclude that compiler optimizations together with SIMD-instructions makes it possible to achieve acceleration by 7 times.
+The table below shows the FPS measured for different optimization modes. 
+
+After various measurements we can get the following statistics below. (O-flags, and display modes). the main values at this table are below.
+
+| Computation modes | No flags    |     -O2     |     -O3     |     -Ofast    |
+| :---------------: | :----------:| :---------: | :---------: | :----------:  |
+|    1 + no_sse     | * 6.15 | 1x | 11.1 | 1.8x | 11.2 | 1.8x |  11.6  | 1.9x |
+|    2 + no_sse     |   1.43 | 1x | 1.81 | 1.8x | 1.77 | 1.8x |  1.65  | 1.8x |
+|    1 + sse        |   8.62 | 1x | 39.6 | 1.8x | 40.3 | 1.8x | **42.6 | 1.8x |
+<!-- | sse + vid    |   1.69   | 1.85 |  2.01  | 2.14   | -->
+
+We can conclude that compiler optimizations together with SIMD-instructions make it possible to achieve acceleration by 7 times.
 We can also verify the slowness of my chosen method of drawing (display every pixel in cycle).
 
 # Control

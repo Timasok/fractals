@@ -143,47 +143,53 @@ int FormMandelbrot(RenderWindow &window, Uint8 *pixels)
     // RectangleShape piece = RectangleShape(Vector2f(1/scale, 1/scale));
     RectangleShape piece = RectangleShape(Vector2f(1, 1));
 
-    int yi = 0;
-    for (; yi < Mandb_Initial.w_height; yi++)
+    for(int cnt = 0; cnt < COUNTS; cnt++)
     {
-        float Y0 = Mandb_Initial.y_min + (Y_shift+yi)*Mandb_Initial.dy*scale;
-
-        int xi = 0;
-        for(; xi < Mandb_Initial.w_width; xi++)
+        int yi = 0;
+        for (; yi < Mandb_Initial.w_height; yi++)
         {
-            // pixels[xi*yi] = RectangleShape(Vector2f(1, 1));
+            float Y0 = Mandb_Initial.y_min + (Y_shift+yi)*Mandb_Initial.dy*scale;
 
-            float X0 = Mandb_Initial.x_min + (X_shift + xi)*Mandb_Initial.dx*scale;
-
-            float X  = X0;
-            float Y  = Y0; 
-
-            float R2 = X*X + Y*Y;
-
-            volatile int c = 0;
-            // while (c < Mandb_Initial.N_max && R2 < Mandb_Initial.R_max2)
-            while (c < Mandb_Initial.N_max && R2 - Mandb_Initial.R_max2 < EPS)
+            int xi = 0;
+            for(; xi < Mandb_Initial.w_width; xi++)
             {
-                float X2  = X*X;
-                float Y2  = Y*Y;
-                float XY  = X*Y + X*Y; 
+                // pixels[xi*yi] = RectangleShape(Vector2f(1, 1));
 
-                X = X2 - Y2 + X0;
-                Y = XY + Y0;
+                float X0 = Mandb_Initial.x_min + (X_shift + xi)*Mandb_Initial.dx*scale;
 
-                R2 = X2 + Y2;
+                float X  = X0;
+                float Y  = Y0; 
 
-                c++;
+                float R2 = X*X + Y*Y;
+
+                volatile int c = 0;
+                // while (c < Mandb_Initial.N_max && R2 < Mandb_Initial.R_max2)
+                while (c < Mandb_Initial.N_max && R2 - Mandb_Initial.R_max2 < EPS)
+                {
+                    float X2  = X*X;
+                    float Y2  = Y*Y;
+                    float XY  = X*Y + X*Y; 
+
+                    X = X2 - Y2 + X0;
+                    Y = XY + Y0;
+
+                    R2 = X2 + Y2;
+
+                    c++;
+                }
+
+    #ifndef NO_VID
+                if(cnt == COUNTS - 1)
+                {
+                    piece.setPosition((float) xi, (float) yi);
+
+                    piece.setFillColor(GetColor(c));
+                    window.draw(piece);
+                }
+    #endif
             }
-
-#ifndef NO_VID
-            piece.setPosition((float) xi, (float) yi);
-
-            piece.setFillColor(GetColor(c));
-            window.draw(piece);
-#endif
-        }
-    }   
+        }   
+    }
 
     return 0;
 }
@@ -203,79 +209,86 @@ int FormMandelbrot(RenderWindow &window, Uint8 *pixels)
     __m128 R2_max = _mm_set1_ps(Mandb_Initial.R_max2);
     __m128 Mask   = _mm_set1_ps(0x0001);                           //__m128 _mm128_set1_ps (float a)
 
-    int yi = 0;
-    for (; yi < Mandb_Initial.w_height; yi++)
+    for(int cnt = 0; cnt < COUNTS; cnt++)
     {
-        __m128 Y_SHIFT = _mm_set1_ps(Mandb_Initial.y_min + Y_shift*Mandb_Initial.dy*scale);
-        __m128 DY = _mm_set1_ps(Mandb_Initial.dy*scale);
-        __m128 Y0 = _mm_set1_ps(yi);                // __m128 _mm128_setr_m128 (__m128 lo, __m128 hi)
-         Y0 = _mm_mul_ps(Y0, DY);                                                      // __m128 _mm128_mul_ps (__m128 a, __m128 b)
-         Y0 = _mm_add_ps(Y0, Y_SHIFT);                                                 // __m128 _mm128_add_ps (__m128 a, __m128 b)
 
-        int xi = 0;
-        // for(; xi < Mandb_Initial.w_width; xi++)
-        for(; xi < Mandb_Initial.w_width; xi+=N_BITES)
+        int yi = 0;
+        for (; yi < Mandb_Initial.w_height; yi++)
         {
-            __m128 X_SHIFT = _mm_set1_ps(Mandb_Initial.x_min + X_shift*Mandb_Initial.dx*scale);
-            __m128 DX = _mm_set1_ps(Mandb_Initial.dx*scale);
-            __m128 X0 = _mm_set_ps(xi, xi+1, xi+2, xi+3);                // __m128 _mm128_setr_m128 (__m128 lo, __m128 hi)
-            // __m128 X0 = _mm128_set1_ps(xi);                                                    // __m128 _mm128_setr_m128 (__m128 lo, __m128 hi)
+            __m128 Y_SHIFT = _mm_set1_ps(Mandb_Initial.y_min + Y_shift*Mandb_Initial.dy*scale);
+            __m128 DY = _mm_set1_ps(Mandb_Initial.dy*scale);
+            __m128 Y0 = _mm_set1_ps(yi);                // __m128 _mm128_setr_m128 (__m128 lo, __m128 hi)
+            Y0 = _mm_mul_ps(Y0, DY);                                                      // __m128 _mm128_mul_ps (__m128 a, __m128 b)
+            Y0 = _mm_add_ps(Y0, Y_SHIFT);                                                 // __m128 _mm128_add_ps (__m128 a, __m128 b)
 
-             X0 = _mm_mul_ps(X0, DX);                                                      // __m128 _mm128_mul_ps (__m128 a, __m128 b)
-             X0 = _mm_add_ps(X0, X_SHIFT);                                                 // __m128 _mm128_add_ps (__m128 a, __m128 b)
-                                                                                                    //__m128 _mm128_set1_ps (float a)                                                                                
-            __m128 X = X0;                                                                          //__m128 _mm128_set1_ps (float a)
-            __m128 Y = Y0; 
-
-            volatile __m128 c   = _mm_setzero_ps();                                                //__m128 _mm128_setzero_ps (void)
-            __m128 cmp = _mm_set1_ps(1);                                              // __m128i _mm128_set1_epi32 (int a) - set 1
-            
-            // __m128i N = _mm128_set1_epi32(Mandb_Initial.N_max);                      //__m128 _mm128_set1_ps (float a)
-            // int mask = 1; 
-                                                                                    //__m128i _mm128_blend_epi32 (__m128i a, __m128i b, const int imm8)
-            for(int i = 0; i < Mandb_Initial.N_max; i++)
+            int xi = 0;
+            // for(; xi < Mandb_Initial.w_width; xi++)
+            for(; xi < Mandb_Initial.w_width; xi+=N_BITES)
             {
-                __m128 X2 = _mm_mul_ps(X, X);                                   //__m128 _mm128_mul_ps (__m128 a, __m128 b)
-                __m128 Y2 = _mm_mul_ps(Y, Y);                                   //__m128 _mm128_mul_ps (__m128 a, __m128 b)
-                __m128 R2 = _mm_add_ps(X2, Y2);                                 //__m128 _mm128_add_ps (__m128 a, __m128 b)
+                __m128 X_SHIFT = _mm_set1_ps(Mandb_Initial.x_min + X_shift*Mandb_Initial.dx*scale);
+                __m128 DX = _mm_set1_ps(Mandb_Initial.dx*scale);
+                __m128 X0 = _mm_set_ps(xi, xi+1, xi+2, xi+3);                // __m128 _mm128_setr_m128 (__m128 lo, __m128 hi)
+                // __m128 X0 = _mm128_set1_ps(xi);                                                    // __m128 _mm128_setr_m128 (__m128 lo, __m128 hi)
 
-                 cmp = _mm_cmplt_ps (R2, R2_max);                                                        
-                                                                                   //__m128 _mm128_cmp_ps (__m128 a, __m128 b, const int imm8)
-                int mask  =_mm_movemask_ps (cmp);                               //int _mm128_movemask_ps (__m128 a)                                 
-                // printf("%b", mask);
+                X0 = _mm_mul_ps(X0, DX);                                                      // __m128 _mm128_mul_ps (__m128 a, __m128 b)
+                X0 = _mm_add_ps(X0, X_SHIFT);                                                 // __m128 _mm128_add_ps (__m128 a, __m128 b)
+                                                                                                        //__m128 _mm128_set1_ps (float a)                                                                                
+                __m128 X = X0;                                                                          //__m128 _mm128_set1_ps (float a)
+                __m128 Y = Y0; 
 
-                if (!mask)
-                    break;
+                volatile __m128 c   = _mm_setzero_ps();                                                //__m128 _mm128_setzero_ps (void)
+                __m128 cmp = _mm_set1_ps(1);                                              // __m128i _mm128_set1_epi32 (int a) - set 1
+                
+                // __m128i N = _mm128_set1_epi32(Mandb_Initial.N_max);                      //__m128 _mm128_set1_ps (float a)
+                // int mask = 1; 
+                                                                                        //__m128i _mm128_blend_epi32 (__m128i a, __m128i b, const int imm8)
+                for(int i = 0; i < Mandb_Initial.N_max; i++)
+                {
+                    __m128 X2 = _mm_mul_ps(X, X);                                   //__m128 _mm128_mul_ps (__m128 a, __m128 b)
+                    __m128 Y2 = _mm_mul_ps(Y, Y);                                   //__m128 _mm128_mul_ps (__m128 a, __m128 b)
+                    __m128 R2 = _mm_add_ps(X2, Y2);                                 //__m128 _mm128_add_ps (__m128 a, __m128 b)
 
-                __m128 XY = _mm_mul_ps(X, Y); 
-                 XY = _mm_add_ps (XY, XY);                                 // __m128 _mm128_add_ps (__m128 a, __m128 b)
+                    cmp = _mm_cmplt_ps (R2, R2_max);                                                        
+                                                                                    //__m128 _mm128_cmp_ps (__m128 a, __m128 b, const int imm8)
+                    int mask  =_mm_movemask_ps (cmp);                               //int _mm128_movemask_ps (__m128 a)                                 
+                    // printf("%b", mask);
 
-                 X = _mm_sub_ps (X2, Y2);                                  //__m128 _mm128_sub_ps (__m128 a, __m128 b)
-                 X = _mm_add_ps (X, X0);                                   //__m128 _mm128_add_ps (__m128 a, __m128 b)
-                 Y = _mm_add_ps (XY, Y0);
-                                         
-                cmp = _mm_and_ps(cmp, Mask);
-                                                                                    //__m128 _mm128_add_ps (__m128 a, __m128 b)
-                 c = _mm_add_ps(c, cmp);                                   //int _mm128_movemask_ps (__m128 a) 
-            
-            } ;
+                    if (!mask)
+                        break;
 
-#ifndef NO_VID
+                    __m128 XY = _mm_mul_ps(X, Y); 
+                    XY = _mm_add_ps (XY, XY);                                 // __m128 _mm128_add_ps (__m128 a, __m128 b)
 
-            for (int counter = 0; counter < N_BITES; counter++)
-            {
-                float c_single = ((float *)&c)[N_BITES - 1 - counter];
+                    X = _mm_sub_ps (X2, Y2);                                  //__m128 _mm128_sub_ps (__m128 a, __m128 b)
+                    X = _mm_add_ps (X, X0);                                   //__m128 _mm128_add_ps (__m128 a, __m128 b)
+                    Y = _mm_add_ps (XY, Y0);
+                                            
+                    cmp = _mm_and_ps(cmp, Mask);
+                                                                                        //__m128 _mm128_add_ps (__m128 a, __m128 b)
+                    c = _mm_add_ps(c, cmp);                                   //int _mm128_movemask_ps (__m128 a) 
+                
+                } ;
 
-                piece.setPosition((float) (xi+counter), (float) (yi));
+    #ifndef NO_VID
+                if(cnt == COUNTS - 1)
+                {
 
-                piece.setFillColor(GetColor((int)c_single));
-                window.draw(piece);
+                    for (int counter = 0; counter < N_BITES; counter++)
+                    {
+                        float c_single = ((float *)&c)[N_BITES - 1 - counter];
+
+                        piece.setPosition((float) (xi+counter), (float) (yi));
+
+                        piece.setFillColor(GetColor((int)c_single));
+                        window.draw(piece);
+                    }
+
+                }
+    #endif
+
             }
-#endif
-
-        }
-    }   
-
+        }   
+    }
 
     return 0;   
 }
