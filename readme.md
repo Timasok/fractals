@@ -1,7 +1,10 @@
-# Research topic
-Using intrinsic functions for optimization.
+# Introduction
+This program is a research on using intrinsics for optimization.
 
 # Algorithm and software tools
+
+On this resource you can find the algorithm:
+<https://complex-analysis.com/content/mandelbrot_set.html>
 
 Here is a picture of Mandelbrot fractal created by our program.
 
