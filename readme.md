@@ -12,8 +12,7 @@ Here is a picture of Mandelbrot fractal created by our program.
 
 This algorithm is often used to estimate the computational speed of hardware.
 
-Note:
-SFML is used as a graphics library.
+``Note: SFML is used as a graphics library.``
 
 ## Optimization results
 
